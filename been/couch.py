@@ -57,7 +57,7 @@ class CouchStore(Store):
 
         events, since = source.fetch(source_info.get('since', {}))
         for event in events:
-            event['_id'] = sha1(event['summary']+str(event['timestamp'])).hexdigest()
+            event['_id'] = sha1(event['summary'].encode('utf-8')+str(event['timestamp'])).hexdigest()
             event['type'] = 'event'
             event['source'] = source.source_id
         self.db.update(events)

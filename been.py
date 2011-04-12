@@ -24,7 +24,7 @@ def add(app, kind, *args):
 @command
 def log(app):
     for event in app.store.events():
-        print event['summary']
+        print event['summary'].encode('utf-8')
 
 @command
 def list(app):
