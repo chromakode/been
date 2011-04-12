@@ -3,4 +3,7 @@ from been.core import SiteFeedSource, source_registry
 class LastFM(SiteFeedSource):
     url_format = 'http://ws.audioscrobbler.com/2.0/user/{username}/recenttracks.rss?limit=50'
     kind = 'lastfm'
+    def process_event(self, event):
+        event['summary'] = 'listened to '+event['summary']
+        return event
 source_registry.add(LastFM)
