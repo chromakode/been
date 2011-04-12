@@ -2,8 +2,8 @@ import pkgutil
 import feedparser
 
 class SourceRegistry(dict):
-    def add(self, kind, cls):
-        self[kind] = cls
+    def add(self, cls):
+        self[cls.kind] = cls
 
     def create(self, data):
         return self[data['kind']](data)
@@ -41,6 +41,11 @@ class FeedSource(Source):
         return event
 
 class SiteFeedSource(FeedSource):
+    url_format = ''
+    def __init__(self, config):
+        FeedSource.__init__(self, config)
+        self.config['url'] = self.url_format.format(username=self.config['username'])
+
     @property
     def source_id(self):
         return self.kind+':'+self.config['username']
