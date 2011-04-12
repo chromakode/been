@@ -1,4 +1,3 @@
-import pkgutil
 import feedparser
 
 class SourceRegistry(dict):
