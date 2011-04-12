@@ -25,14 +25,18 @@ class FeedSource(Source):
         events = []
 
         for entry in feed.entries:
-            events.append(self.process_event({
+            event = {
                 'author'     : entry.get('author'),
                 'summary'    : entry.get('title'),
-                'content'    : entry.get('content')[0]['value'],
-                'timestamp'  : entry.get('published_parsed'),
+                'timestamp'  : entry.get('published_parsed') or entry.get('updated_parsed'),
                 'event_link' : entry.get('link'),
                 'data'       : entry
-            }))
+            }
+
+            if 'content' in entry:
+                event['content'] = entry.get('content')[0]['value'],
+
+            events.append(self.process_event(event))
         
         since = {'etag': feed.get('etag'), 'modified': feed.get('modified')}
         return events, since
