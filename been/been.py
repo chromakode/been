@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
-from been.core import Been, source_registry
-from been.source import *
+from core import Been, source_registry
+from source import *
 
 _cmds = {}
 def command(f):
