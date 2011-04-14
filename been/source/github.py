@@ -1,7 +1,7 @@
 from been.core import SiteFeedSource, source_registry
 
 class GitHub(SiteFeedSource):
-    url_format = 'http://github.com/{username}.atom'
+    url_format = 'https://github.com/{username}.atom'
     kind = 'github'
     def process_event(self, event):
         summary = event['summary']
