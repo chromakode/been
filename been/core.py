@@ -1,3 +1,4 @@
+import time
 import feedparser
 
 class SourceRegistry(dict):
@@ -18,27 +19,33 @@ class Source(object):
 
 class FeedSource(Source):
     def fetch(self, since):
+        modified = time.gmtime(since.get('modified'))
         feed = feedparser.parse(self.config['url'],
-                modified=since.get('modified'),
-                etag=since.get('etag'))
-        events = []
+                modified = time.gmtime(since['modified'])
+                            if since.get('modified')
+                            else None,
+                etag = since.get('etag'))
 
-        for entry in feed.entries:
-            event = {
-                'author'     : entry.get('author'),
-                'summary'    : entry.get('title'),
-                'timestamp'  : entry.get('published_parsed') or entry.get('updated_parsed'),
-                'event_link' : entry.get('link'),
-                'data'       : entry
-            }
+        if feed.status == 304:
+            return [], since
+        else:
+            events = []
+            for entry in feed.entries:
+                event = {
+                    'author'     : entry.get('author'),
+                    'summary'    : entry.get('title'),
+                    'timestamp'  : entry.get('published_parsed') or entry.get('updated_parsed'),
+                    'event_link' : entry.get('link'),
+                    'data'       : entry
+                }
 
-            if 'content' in entry:
-                event['content'] = entry.get('content')[0]['value'],
+                if 'content' in entry:
+                    event['content'] = entry.get('content')[0]['value'],
 
-            events.append(self.process_event(event))
-        
-        since = {'etag': feed.get('etag'), 'modified': feed.get('modified')}
-        return events, since
+                events.append(self.process_event(event))
+            
+            since = {'etag': feed.get('etag'), 'modified': feed.get('modified')}
+            return events, since
 
     def process_event(self, event):
         return event
