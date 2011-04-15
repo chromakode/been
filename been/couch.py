@@ -45,7 +45,7 @@ class CouchStore(Store):
                 }
 
     def get_sources(self):
-        return self.db.view('activity/sources')
+        return dict((row.key, row.value) for row in self.db.view('activity/sources'))
 
     def add_source(self, source):
         source_data = source.config.copy()
