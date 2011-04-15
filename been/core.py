@@ -76,8 +76,8 @@ class Been(object):
     
     def init(self):
         import couch
-        self.store = couch.CouchStore()
-        for source_data in self.store.load().itervalues():
+        self.store = couch.CouchStore().load()
+        for source_data in self.store.get_sources().itervalues():
             self.sources.append(source_registry.create(source_data))
 
     def add(self, source):

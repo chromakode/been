@@ -25,7 +25,7 @@ class CouchStore(Store):
         self.db = self.server[db_name]
         self.init_views()
 
-        return self.get_sources()
+        return self
 
     def init_views(self):
         if '_design/activity' not in self.db:
