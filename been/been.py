@@ -28,8 +28,8 @@ def log(app):
 
 @command
 def list(app):
-    for source in app.sources:
-        print '{name}'.format(name = source.source_id)
+    for source_id in app.sources.iterkeys():
+        print '{name}'.format(name = source_id)
 
 @command
 def empty(app):

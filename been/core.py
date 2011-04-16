@@ -119,7 +119,7 @@ class Been(object):
         return self
 
     def add(self, source):
-        self.sources.append(source)
+        self.sources[source.source_id] = source
         self.store.add_source(source)
 
     def update(self):
