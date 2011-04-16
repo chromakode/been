@@ -81,7 +81,7 @@ class Store(object):
             if sources[source].get('collapse') or event.get('collapse'):
                 if source not in groups:
                     groups[source] = {"source":source, "kind":event["kind"], "children":[]}
-                group = groups.setdefault(source, [])
+                group = groups[source]
                 latest = group["children"][-1]['timestamp'] if group["children"] else event['timestamp']
 
                 # Group if the event occured within "interval" (default 2 hours) of
