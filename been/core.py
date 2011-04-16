@@ -69,6 +69,37 @@ class Store(object):
         self.config = config or {}
 
     def update(self, source): raise NotImplementedError
+    
+    def collapsed_events(self, *args, **kwargs):
+        groups = {}
+        sources = self.get_sources()
+        for event in self.events(*args, **kwargs):
+            source = event['source']
+            collapse = sources[source].get('collapse', {})
+            if collapse == True: collapse = {}
+
+            # Group if the source or the event has a "collapse" property set.
+            if sources[source].get('collapse') or event.get('collapse'):
+                if source not in groups:
+                    groups[source] = {"source":source, "kind":event["kind"], "children":[]}
+                group = groups.setdefault(source, [])
+                latest = group["children"][-1]['timestamp'] if group["children"] else event['timestamp']
+
+                # Group if the event occured within "interval" (default 2 hours) of
+                # the last of the same source.
+                interval = collapse.get('interval', 2*60*60)
+                if latest - event['timestamp'] <= interval:
+                    group["children"].append(event)
+                else:
+                    # If a longer interval occurred, empty and yield the group.
+                    del groups[source]
+                    yield group
+            else:
+                yield event
+
+        # Yield any remaining groups.
+        for group in groups.itervalues():
+            yield group
 
 class Been(object):
     def __init__(self):
