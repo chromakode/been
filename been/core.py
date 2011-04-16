@@ -102,13 +102,13 @@ class Store(object):
 
 class Been(object):
     def __init__(self):
-        self.sources = []
+        self.sources = {}
     
     def init(self):
         import couch
         self.store = couch.CouchStore().load()
-        for source_data in self.store.get_sources().itervalues():
-            self.sources.append(source_registry.create(source_data))
+        for source_id, source_data in self.store.get_sources().iteritems():
+            self.sources[source_id] = source_registry.create(source_data)
         return self
 
     def add(self, source):
@@ -116,5 +116,5 @@ class Been(object):
         self.store.add_source(source)
 
     def update(self):
-        for source in self.sources:
-            self.store.store_events(source, source.fetch())
+        for source in self.sources.itervalues():
+            self.store.store_update(source, source.fetch())
