@@ -80,15 +80,22 @@ class Store(object):
             # Group if the source or the event has a "collapse" property set.
             if sources[source].get('collapse') or event.get('collapse'):
                 if source not in groups:
-                    groups[source] = {"source":source, "kind":event["kind"], "children":[]}
+                    groups[source] = {
+                        "source": source,
+                        "kind": event["kind"],
+                        "timestamp": event["timestamp"],
+                        "children": []
+                    }
                 group = groups[source]
                 latest = group["children"][-1]['timestamp'] if group["children"] else event['timestamp']
 
                 # Group if the event occured within "interval" (default 2 hours) of
                 # the last of the same source.
                 interval = collapse.get('interval', 2*60*60)
-                if latest - event['timestamp'] <= interval:
+                # Compare latest - current, since events are ordered descending by timestamp.
+                if group['timestamp'] - event['timestamp'] <= interval:
                     group["children"].append(event)
+                    group["timestamp"] = event["timestamp"]
                 else:
                     # If a longer interval occurred, empty and yield the group.
                     del groups[source]
