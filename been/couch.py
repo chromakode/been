@@ -52,19 +52,14 @@ class CouchStore(Store):
         source_data['type'] = 'source'
         self.db[source.source_id] = source_data
 
-    def update(self, source):
-        source_info = self.db[source.source_id]
-
-        events, since = source.fetch(source_info.get('since', {}))
+    def store_events(self, source, events):
         for event in events:
             event['_id'] = sha1(event['summary'].encode('utf-8')+str(event['timestamp'])).hexdigest()
             event['type'] = 'event'
             event['kind'] = source.kind
             event['source'] = source.source_id
         self.db.update(events)
-
-        source_info['since'] = since
-        self.db[source.source_id] = source_info
+        self.db[source.source_id] = source.config
 
     def events(self, count=100):
         return (event.value for event in self.db.view('activity/events', limit=count, descending=True))

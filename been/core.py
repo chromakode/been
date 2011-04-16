@@ -15,10 +15,11 @@ class Source(object):
         self.config = config or {}
         self.config['kind'] = self.kind
 
-    def fetch(self, since): raise NotImplementedError
+    def fetch(self): raise NotImplementedError
 
 class FeedSource(Source):
-    def fetch(self, since):
+    def fetch(self):
+        since = self.config['since']
         modified = time.gmtime(since.get('modified'))
         feed = feedparser.parse(self.config['url'],
                 modified = time.gmtime(since['modified'])
@@ -27,7 +28,7 @@ class FeedSource(Source):
                 etag = since.get('etag'))
 
         if feed.status == 304:
-            return [], since
+            return []
         else:
             events = []
             for entry in feed.entries:
@@ -44,8 +45,8 @@ class FeedSource(Source):
 
                 events.append(self.process_event(event))
             
-            since = {'etag': feed.get('etag'), 'modified': feed.get('modified')}
-            return events, since
+            self.config['since'] = {'etag': feed.get('etag'), 'modified': feed.get('modified')}
+            return events
 
     def process_event(self, event):
         return event
@@ -68,8 +69,6 @@ class Store(object):
     def __init__(self, config=None):
         self.config = config or {}
 
-    def update(self, source): raise NotImplementedError
-    
     def collapsed_events(self, *args, **kwargs):
         groups = {}
         sources = self.get_sources()
@@ -118,4 +117,4 @@ class Been(object):
 
     def update(self):
         for source in self.sources:
-            self.store.update(source)
+            self.store.store_events(source, source.fetch())
