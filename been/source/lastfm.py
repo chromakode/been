@@ -5,5 +5,6 @@ class LastFM(SiteFeedSource):
     kind = 'lastfm'
     def process_event(self, event):
         event['summary'] = 'listened to '+event['summary']
+        event['artist'], event['track'] = event['data']['title'].split(u' \u2013 ')
         return event
 source_registry.add(LastFM)
