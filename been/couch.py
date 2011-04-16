@@ -52,13 +52,17 @@ class CouchStore(Store):
         source_data['type'] = 'source'
         self.db[source.source_id] = source_data
 
-    def store_events(self, source, events):
+    def store_events(self, events):
         for event in events:
-            event['_id'] = sha1(event['summary'].encode('utf-8')+str(event['timestamp'])).hexdigest()
+            event.setdefault('_id', sha1(event['summary'].encode('utf-8')+str(event['timestamp'])).hexdigest())
             event['type'] = 'event'
+        self.db.update(events)
+
+    def store_update(self, source, events):
+        for event in events:
             event['kind'] = source.kind
             event['source'] = source.source_id
-        self.db.update(events)
+        self.store_events(events)
         self.db[source.source_id] = source.config
 
     def events(self, count=100):
