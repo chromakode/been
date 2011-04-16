@@ -79,6 +79,7 @@ class Been(object):
         self.store = couch.CouchStore().load()
         for source_data in self.store.get_sources().itervalues():
             self.sources.append(source_registry.create(source_data))
+        return self
 
     def add(self, source):
         self.sources.append(source)
