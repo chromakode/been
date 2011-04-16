@@ -35,6 +35,10 @@ def list(app):
 def empty(app):
     app.store.empty()
 
+@command
+def reprocess(app):
+    app.reprocess()
+
 def main():
     app = Been()
     app.init()

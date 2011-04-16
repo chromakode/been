@@ -118,3 +118,9 @@ class Been(object):
     def update(self):
         for source in self.sources.itervalues():
             self.store.store_update(source, source.fetch())
+
+    def reprocess(self):
+        def reprocess_iter():
+            for event in self.store.events():
+                yield self.sources[event['source']].process_event(event)
+        self.store.store_events(list(reprocess_iter()))
