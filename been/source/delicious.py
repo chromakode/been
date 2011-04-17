@@ -5,6 +5,6 @@ class Delicious(SiteFeedSource):
     kind = 'delicious'
     def process_event(self, event):
         event['author'] = self.config['username']
-        event['summary'] = 'bookmarked ' + event['summary']
+        event['summary'] = 'bookmarked ' + event['data']['title']
         return event
 source_registry.add(Delicious)

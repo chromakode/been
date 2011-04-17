@@ -4,7 +4,7 @@ class GitHub(SiteFeedSource):
     url_format = 'https://github.com/{username}.atom'
     kind = 'github'
     def process_event(self, event):
-        summary = event['summary']
+        summary = event['data']['title']
         if summary.startswith(self.config['username']):
             event['summary'] = summary[summary.find(' ') + 1:]
         return event
