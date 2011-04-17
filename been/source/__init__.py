@@ -1,1 +1,1 @@
-__all__ = ['twitter', 'github', 'lastfm', 'grooveshark', 'flickr', 'delicious']
+__all__ = ['twitter', 'github', 'lastfm', 'grooveshark', 'flickr', 'delicious', 'markdown']
