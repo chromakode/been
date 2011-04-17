@@ -5,6 +5,6 @@ class Grooveshark(SiteFeedSource):
     kind = 'grooveshark'
     def process_event(self, event):
         event['author'] = self.config['username']
-        event['summary'] = 'favorited ' + event['summary']
+        event['summary'] = 'favorited ' + event['data']['title']
         return event
 source_registry.add(Grooveshark)
