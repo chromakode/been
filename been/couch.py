@@ -71,3 +71,7 @@ class CouchStore(Store):
     def empty(self):
         for event in self.db.view('activity/events'):
             self.db.delete(event.value)
+        for row in self.db.view('activity/sources'):
+            source = row.value
+            source['since'] = {}
+            self.db[row.id] = source
