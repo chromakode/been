@@ -120,7 +120,7 @@ class Been(object):
 
     def add(self, source):
         self.sources[source.source_id] = source
-        self.store.add_source(source)
+        self.store.store_source(source)
 
     def update(self):
         for source in self.sources.itervalues():
