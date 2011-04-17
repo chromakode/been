@@ -117,40 +117,48 @@ class Store(object):
     def collapsed_events(self, *args, **kwargs):
         groups = {}
         sources = self.get_sources()
-        for event in self.events(*args, **kwargs):
+        events = []
+        for index, event in enumerate(self.events(*args, **kwargs)):
             source = event['source']
-            collapse = sources[source].get('collapse', {})
+            collapse = sources[source].get('collapse', False)
             if collapse == True: collapse = {}
 
             # Group if the source or the event has a "collapse" property set.
-            if sources[source].get('collapse') or event.get('collapse'):
-                if source not in groups:
-                    groups[source] = {
-                        "source": source,
-                        "kind": event["kind"],
-                        "timestamp": event["timestamp"],
-                        "children": []
-                    }
-                group = groups[source]
-                latest = group["children"][-1]['timestamp'] if group["children"] else event['timestamp']
+            if collapse != False or event.get('collapse'):
+                def group_event():
+                    if source not in groups:
+                        groups[source] = {
+                            "source": source,
+                            "kind": event["kind"],
+                            "timestamp": event["timestamp"],
+                            "children": []
+                        }
+                    group = groups[source]
 
-                # Group if the event occured within "interval" (default 2 hours) of
-                # the last of the same source.
-                interval = collapse.get('interval', 2*60*60)
-                # Compare latest - current, since events are ordered descending by timestamp.
-                if group['timestamp'] - event['timestamp'] <= interval:
-                    group["children"].append(event)
-                    group["timestamp"] = event["timestamp"]
-                else:
-                    # If a longer interval occurred, empty and yield the group.
-                    del groups[source]
-                    yield group
-            else:
-                yield event
+                    # Group if the event occured within "interval" (default 2 hours) of
+                    # the last of the same source.
+                    latest = group["children"][-1]['timestamp'] if group["children"] else event['timestamp']
+                    interval = collapse.get('interval', 2*60*60)
+                    # Compare latest - current, since events are ordered descending by timestamp.
+                    if group['timestamp'] - event['timestamp'] <= interval:
+                        event["collapsed"] = True
+                        group["children"].append(event)
+                        group["timestamp"] = event["timestamp"]
+                        group["index"] = index
+                    else:
+                        # If a longer interval occurred, empty the group and add it at the position of its last event.
+                        # Searching the list again to find the event index is a bit inefficient,
+                        # but storing the index isn't a perfect solution because adding other groups will shift the elements.
+                        last_index = events.index(group["children"][-1], group["index"])
+                        events.insert(last_index+1, group)
+                        del groups[source]
+                        # Add this event to a new group by processing it again (with the cleared group).
+                        group_event()
+                group_event()
 
-        # Yield any remaining groups.
-        for group in groups.itervalues():
-            yield group
+            events.append(event)
+
+        return filter(lambda e:not e.get("collapsed"), events)
 
 class Been(object):
     def __init__(self):
