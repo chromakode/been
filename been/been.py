@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import json
 from core import Been, source_registry
 from source import *
 
@@ -38,6 +39,20 @@ def empty(app):
 @command
 def reprocess(app):
     app.reprocess()
+
+@command
+def config(app, source_id, key, *args):
+    source = app.sources[source_id]
+    if args:
+        value = ' '.join(args)
+        try:
+            value = json.loads(value)
+        except ValueError:
+            pass
+        source.config[key] = value
+        app.store.store_source(source)
+    else:
+        print json.dumps(source.config.get(key))
 
 def main():
     app = Been()

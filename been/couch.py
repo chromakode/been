@@ -5,10 +5,11 @@ from core import Store
 # Add time serialization to couchdb's json repertoire.
 import json
 import time
+import calendar
 class TimeEncoder(json.JSONEncoder):
     def default(self, obj):
         if type(obj) is time.struct_time:
-            return time.mktime(obj)
+            return calendar.timegm(obj)
         else:
             return json.JSONEncoder.default(self, obj)
 couchdb.json.use(
@@ -47,7 +48,7 @@ class CouchStore(Store):
     def get_sources(self):
         return dict((row.key, row.value) for row in self.db.view('activity/sources'))
 
-    def add_source(self, source):
+    def store_source(self, source):
         source_data = source.config.copy()
         source_data['type'] = 'source'
         self.db[source.source_id] = source_data
