@@ -1,6 +1,6 @@
 from been.core import DirectorySource, source_registry
 
-class Markdown(DirectorySource):
+class MarkdownDirectory(DirectorySource):
     kind = 'markdown'
     def process_event(self, event):
         lines = event['content'].splitlines()
@@ -8,4 +8,4 @@ class Markdown(DirectorySource):
         event['content'] = "\n".join(lines[1:])
         event['summary'] = event['content']
         return event
-source_registry.add(Markdown)
+source_registry.add(MarkdownDirectory)
