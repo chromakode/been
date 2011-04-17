@@ -102,7 +102,7 @@ class Store(object):
                         group["index"] = index
                     else:
                         # If a longer interval occurred, empty the group and add it at the position of its last event.
-                        # Traversing the list again to find the event index is a bit inefficient,
+                        # Searching the list again to find the event index is a bit inefficient,
                         # but storing the index isn't a perfect solution because adding other groups will shift the elements.
                         last_index = events.index(group["children"][-1], group["index"])
                         events.insert(last_index+1, group)
