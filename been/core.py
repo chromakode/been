@@ -117,8 +117,8 @@ class Store(object):
     def collapsed_events(self, *args, **kwargs):
         groups = {}
         sources = self.get_sources()
-        events = []
-        for index, event in enumerate(self.events(*args, **kwargs)):
+        events = list(self.events(*args, **kwargs))
+        for index, event in enumerate(events):
             source = event['source']
             collapse = sources[source].get('collapse', False)
             if collapse == True: collapse = {}
@@ -147,16 +147,12 @@ class Store(object):
                         group["index"] = index
                     else:
                         # If a longer interval occurred, empty the group and add it at the position of its last event.
-                        # Searching the list again to find the event index is a bit inefficient,
-                        # but storing the index isn't a perfect solution because adding other groups will shift the elements.
-                        last_index = events.index(group["children"][-1], group["index"])
-                        events.insert(last_index+1, group)
+                        events[group["index"]] = group
+                        del group["index"]
                         del groups[source]
                         # Add this event to a new group by processing it again (with the cleared group).
                         group_event()
                 group_event()
-
-            events.append(event)
 
         return filter(lambda e:not e.get("collapsed"), events)
 
