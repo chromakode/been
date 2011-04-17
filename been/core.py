@@ -1,5 +1,6 @@
 import time
 import feedparser
+import os
 
 class SourceRegistry(dict):
     def add(self, cls):
@@ -16,6 +17,50 @@ class Source(object):
         self.config['kind'] = self.kind
 
     def fetch(self): raise NotImplementedError
+
+class DirectorySource(Source):
+    def fetch(self):
+        since = self.config.get('since', {})
+        modified = time.gmtime(since.get('modified'))
+        path = self.config.get('path')
+        events = []
+
+        for filename in os.listdir(path):
+            full_path = path + '/' + filename
+
+            if not os.path.isfile(full_path):
+                continue
+
+            m_time = time.gmtime(os.path.getmtime(full_path))
+            if since.get('modified') and m_time < modified:
+                continue
+
+            with open(full_path) as f:
+                content = f.read()
+
+            event = {
+                'filename'  : filename,
+                'full_path' : full_path,
+                'content'   : content,
+                'timestamp' : m_time,
+            }
+
+            events.append(self.process_event(event))
+
+        self.config['since'] = {'modified': time.gmtime() }
+
+        return events
+
+    def process_event(self, event):
+        return event
+
+    @property
+    def source_id(self):
+        return self.kind+':'+self.config['path']
+
+    @classmethod
+    def configure(cls, path):
+        return cls({'path':path})
 
 class FeedSource(Source):
     def fetch(self):
