@@ -41,6 +41,9 @@ class CouchStore(Store):
                        },
                        "events-by-source": {
                            "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }"
+                       },
+                       "events-by-slug": {
+                           "map": "function(doc) { if (doc.type == 'event' && doc.slug) { emit(doc.slug, doc) } }"
                        }
                    }
                 }
@@ -68,6 +71,9 @@ class CouchStore(Store):
 
     def events(self, count=100):
         return (event.value for event in self.db.view('activity/events', limit=count, descending=True))
+
+    def events_by_slug(self, slug):
+        return (event.value for event in self.db.view('activity/events-by-slug')[slug])
 
     def empty(self):
         for event in self.db.view('activity/events'):
