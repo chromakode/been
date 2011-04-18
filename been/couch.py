@@ -29,24 +29,25 @@ class CouchStore(Store):
         return self
 
     def init_views(self):
-        if '_design/activity' not in self.db:
-            self.db['_design/activity'] = {
-                   "language": "javascript",
-                   "views": {
-                       "sources": {
-                           "map": "function(doc) { if (doc.type == 'source') { emit(doc._id, doc) } }"
-                       },
-                       "events": {
-                           "map": "function(doc) { if (doc.type == 'event') { emit(doc.timestamp, doc) } }"
-                       },
-                       "events-by-source": {
-                           "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }"
-                       },
-                       "events-by-slug": {
-                           "map": "function(doc) { if (doc.type == 'event' && doc.slug) { emit(doc.slug, doc) } }"
-                       }
-                   }
-                }
+        doc = self.db.get('_design/activity', {})
+        doc.update({
+           "language": "javascript",
+           "views": {
+               "sources": {
+                   "map": "function(doc) { if (doc.type == 'source') { emit(doc._id, doc) } }"
+               },
+               "events": {
+                   "map": "function(doc) { if (doc.type == 'event') { emit(doc.timestamp, doc) } }"
+               },
+               "events-by-source": {
+                   "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }"
+               },
+               "events-by-slug": {
+                   "map": "function(doc) { if (doc.type == 'event' && doc.slug) { emit(doc.slug, doc) } }"
+               }
+           }
+        })
+        self.db[doc.id] = doc
 
     def get_sources(self):
         return dict((row.key, row.value) for row in self.db.view('activity/sources'))
