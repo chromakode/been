@@ -14,6 +14,7 @@ setup(name='been',
       packages=find_packages(),
       install_requires=[
             'feedparser',
+            'markdown',
             'CouchDB',
       ],
       entry_points={

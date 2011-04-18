@@ -20,8 +20,6 @@ class Source(object):
 
 class DirectorySource(Source):
     def fetch(self):
-        since = self.config.get('since', {})
-        modified = time.gmtime(since.get('modified'))
         path = self.config.get('path')
         events = []
 
@@ -31,10 +29,6 @@ class DirectorySource(Source):
             if not os.path.isfile(full_path):
                 continue
 
-            m_time = time.gmtime(os.path.getmtime(full_path))
-            if since.get('modified') and m_time < modified:
-                continue
-
             with open(full_path) as f:
                 content = f.read()
 
@@ -42,12 +36,13 @@ class DirectorySource(Source):
                 'filename'  : filename,
                 'full_path' : full_path,
                 'content'   : content,
-                'timestamp' : m_time,
+                'timestamp' : time.gmtime(os.path.getmtime(full_path)),
             }
 
-            events.append(self.process_event(event))
+            event = self.process_event(event)
 
-        self.config['since'] = {'modified': time.gmtime() }
+            if event:
+                events.append(event)
 
         return events
 
