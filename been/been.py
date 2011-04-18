@@ -50,8 +50,12 @@ def log(app):
 @command
 def list(app):
     """list: Displays the IDs of all registered sources."""
-    for source_id in app.sources.iterkeys():
+    counts = app.store.events_by_source_count()
+    for source_id, source in app.sources.iteritems():
         print '{name}'.format(name = source_id)
+        for field in ['username', 'url', 'collapse']:
+            if field in source.config:
+                print '  * {0}: {1}'.format(field, source.config[field])
 
 @command
 def empty(app):
