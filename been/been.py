@@ -58,7 +58,7 @@ def reprocess(app):
     app.reprocess()
 
 @command
-def config(app, source_id, key, *args):
+def configure(app, source_id, key, *args):
     source = disambiguate(source_id, app.sources, 'source')
     if args:
         value = ' '.join(args)
