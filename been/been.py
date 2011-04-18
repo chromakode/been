@@ -10,7 +10,24 @@ def command(f):
     return f
 
 def run_command(cmd, app, args):
-    _cmds[cmd](app, *args)
+    disambiguate(cmd, _cmds, 'command')(app, *args)
+
+def disambiguate(key, dict_, desc='key'):
+    try:
+        item = dict_[key]
+    except KeyError:
+        matches = [m for m in dict_.iterkeys() if m.startswith(key)]
+        if len(matches) == 0:
+            print "No {desc} matching '{key}'".format(desc=desc, key=key)
+            sys.exit(1)
+        elif len(matches) > 1:
+            print "Ambiguous {desc} '{key}':".format(desc=desc, key=key)
+            for match_id in matches:
+                print "  " + match_id
+            sys.exit(1)
+        else:
+            item = dict_[matches[0]]
+    return item
 
 @command
 def update(app):
@@ -42,7 +59,7 @@ def reprocess(app):
 
 @command
 def config(app, source_id, key, *args):
-    source = app.sources[source_id]
+    source = disambiguate(source_id, app.sources, 'source')
     if args:
         value = ' '.join(args)
         try:
