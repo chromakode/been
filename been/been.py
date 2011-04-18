@@ -97,7 +97,10 @@ def help(app, cmd=None):
 def main():
     app = Been()
     app.init()
-    cmd = sys.argv[1]
+    if len(sys.argv) < 2:
+        cmd = 'help'
+    else:
+        cmd = sys.argv[1]
     run_command(cmd, app, sys.argv[2:])
 
 if __name__=='__main__':
