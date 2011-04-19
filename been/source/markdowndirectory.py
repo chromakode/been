@@ -5,6 +5,7 @@ import unicodedata
 import time
 import markdown
 
+# slugify from Django source (BSD license)
 def slugify(value):
     value = unicodedata.normalize('NFKD', unicode(value)).encode('ascii', 'ignore')
     value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
