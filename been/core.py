@@ -55,7 +55,7 @@ class DirectorySource(Source):
 
     @classmethod
     def configure(cls, path):
-        return cls({'path':path})
+        return cls({'path':path.rstrip('/')})
 
 class FeedSource(Source):
     def fetch(self):
