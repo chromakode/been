@@ -62,10 +62,24 @@ class CouchStore(Store):
         self.db[source.source_id] = source_data
 
     def store_events(self, events):
+        ids = {}
         for event in events:
             event.setdefault('_id', sha1(event['summary'].encode('utf-8')+str(event['timestamp'])).hexdigest())
+            ids[event['_id']] = event
             event['type'] = 'event'
-        self.db.update(events)
+
+        tries = 3
+        while ids and tries:
+            tries -= 1
+            result = self.db.update(ids.values())
+            for success, _id, info in result:
+                if success:
+                    del ids[_id]
+                else:
+                    ids[_id]['_rev'] = self.db[_id]['_rev']
+
+        if ids:
+            raise couchdb.ResourceConflict
 
     def store_update(self, source, events):
         for event in events:
