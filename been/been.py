@@ -30,9 +30,13 @@ def disambiguate(key, dict_, desc='key'):
     return item
 
 @command
-def update(app):
-    """update: Fetches events from all sources."""
-    app.update()
+def update(app, source_id=None):
+    """update: Fetches events from all sources. If called with an extra argument <source_id>, updates a single source."""
+    if source_id:
+        source = disambiguate(source_id, app.sources, 'source')
+        app.update([source])
+    else:
+        app.update()
 
 @command
 def add(app, kind, *args):
