@@ -57,7 +57,7 @@ def list(app):
     counts = app.store.events_by_source_count()
     for source_id, source in app.sources.iteritems():
         print '{name}'.format(name = source_id)
-        print '  {0} events'.format(counts[source_id])
+        print '  {0} events'.format(counts.get(source_id, 0))
         for field in ['username', 'url', 'collapse']:
             if field in source.config:
                 print '  * {0}: {1}'.format(field, source.config[field])
