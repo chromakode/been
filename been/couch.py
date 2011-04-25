@@ -29,29 +29,31 @@ class CouchStore(Store):
         return self
 
     def init_views(self):
-        doc = self.db.get('_design/activity', {})
-        doc.update({
-           "language": "javascript",
-           "views": {
-               "sources": {
-                   "map": "function(doc) { if (doc.type == 'source') { emit(doc._id, doc) } }"
-               },
-               "events": {
-                   "map": "function(doc) { if (doc.type == 'event') { emit(doc.timestamp, doc) } }"
-               },
-               "events-by-source": {
-                   "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }"
-               },
-               "events-by-source-count": {
-                   "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }",
-                   "reduce": "_count"
-               },
-               "events-by-slug": {
-                   "map": "function(doc) { if (doc.type == 'event' && doc.slug) { emit(doc.slug, doc) } }"
-               }
-           }
-        })
-        self.db[doc.id] = doc
+        views = {
+            "_id": "_design/activity",
+            "language": "javascript",
+            "views": {
+                "sources": {
+                    "map": "function(doc) { if (doc.type == 'source') { emit(doc._id, doc) } }"
+                },
+                "events": {
+                    "map": "function(doc) { if (doc.type == 'event') { emit(doc.timestamp, doc) } }"
+                },
+                "events-by-source": {
+                    "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }"
+                },
+                "events-by-source-count": {
+                    "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }",
+                    "reduce": "_count"
+                },
+                "events-by-slug": {
+                    "map": "function(doc) { if (doc.type == 'event' && doc.slug) { emit(doc.slug, doc) } }"
+                }
+            }
+        }
+        doc = self.db.get(views['_id'], {})
+        doc.update(views)
+        self.db[views['_id']] = doc
 
     def get_sources(self):
         return dict((row.key, row.value) for row in self.db.view('activity/sources'))
