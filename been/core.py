@@ -30,12 +30,12 @@ class DirectorySource(Source):
                 continue
 
             with open(full_path) as f:
-                content = f.read()
+                raw = f.read()
 
             event = {
                 'filename'  : filename,
                 'full_path' : full_path,
-                'content'   : content,
+                'raw'       : raw,
                 'timestamp' : time.gmtime(os.path.getmtime(full_path)),
             }
 

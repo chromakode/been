@@ -15,10 +15,10 @@ class MarkdownDirectory(DirectorySource):
     kind = 'markdown'
     def process_event(self, event):
         md = markdown.Markdown(extensions=['meta'])
-        html = md.convert(event['content'])
+        event['content'] = md.convert(event['raw'])
         event['title'] = ' '.join(md.Meta.get('title', [event['filename']]))
         event['slug'] = '-'.join(md.Meta.get('slug', [slugify(event['title'])]))
-        event['summary'] = ' '.join(md.Meta.get('summary', [event['content'][:100]]))
+        event['summary'] = ' '.join(md.Meta.get('summary', [event['raw'][:100]]))
         if md.Meta.get('published'):
             # Parse time, then convert struct_time (local) -> epoch (GMT) -> struct_time (GMT)
             event['timestamp'] = time.gmtime(time.mktime(time.strptime(' '.join(md.Meta.get('published')), '%Y-%m-%d %H:%M:%S')))
