@@ -90,8 +90,11 @@ class CouchStore(Store):
         self.store_events(events)
         self.db[source.source_id] = source.config
 
-    def events(self, count=100):
-        return (event.value for event in self.db.view('activity/events', limit=count, descending=True))
+    def events(self, count=100, before=None):
+        options = { 'limit': count, 'descending': True }
+        if before is not None:
+            options['startkey'] = before
+        return (event.value for event in self.db.view('activity/events', **options))
 
     def events_by_slug(self, slug):
         return (event.value for event in self.db.view('activity/events-by-slug')[slug])
