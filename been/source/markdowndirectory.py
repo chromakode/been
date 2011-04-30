@@ -19,7 +19,7 @@ class MarkdownDirectory(DirectorySource):
         event['title'] = ' '.join(md.Meta.get('title', [event['filename']]))
         event['author'] = ' '.join(md.Meta.get('author', ['']))
         event['slug'] = '-'.join(md.Meta.get('slug', [slugify(event['title'])]))
-        event['summary'] = ' '.join(md.Meta.get('summary', [event['raw'][:100]]))
+        event['summary'] = 'posted ' + event['title']
         event['meta'] = md.Meta
         if md.Meta.get('published'):
             # Parse time, then convert struct_time (local) -> epoch (GMT) -> struct_time (GMT)
