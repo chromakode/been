@@ -20,6 +20,7 @@ class MarkdownDirectory(DirectorySource):
         event['author'] = ' '.join(md.Meta.get('author', ['']))
         event['slug'] = '-'.join(md.Meta.get('slug', [slugify(event['title'])]))
         event['summary'] = ' '.join(md.Meta.get('summary', [event['raw'][:100]]))
+        event['meta'] = md.Meta
         if md.Meta.get('published'):
             # Parse time, then convert struct_time (local) -> epoch (GMT) -> struct_time (GMT)
             event['timestamp'] = time.gmtime(time.mktime(time.strptime(' '.join(md.Meta.get('published')), '%Y-%m-%d %H:%M:%S')))
