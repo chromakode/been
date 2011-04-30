@@ -14,7 +14,7 @@ def slugify(value):
 class MarkdownDirectory(DirectorySource):
     kind = 'markdown'
     def process_event(self, event):
-        md = markdown.Markdown(extensions=['meta'])
+        md = markdown.Markdown(extensions=['meta', 'tables', 'fenced_code', 'headerid'])
         event['content'] = md.convert(event['raw'])
         event['title'] = ' '.join(md.Meta.get('title', [event['filename']]))
         event['author'] = ' '.join(md.Meta.get('author', ['']))
