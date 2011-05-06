@@ -67,7 +67,7 @@ class FeedSource(Source):
                             else None,
                 etag = since.get('etag'))
 
-        if feed.status == 304:
+        if feed.status == 304 or feed.status >= 400:
             return []
         else:
             events = []
