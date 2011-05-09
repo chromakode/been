@@ -60,7 +60,6 @@ class DirectorySource(Source):
 class FeedSource(Source):
     def fetch(self):
         since = self.config.get('since', {})
-        modified = time.gmtime(since.get('modified'))
         feed = feedparser.parse(self.config['url'],
                 modified = time.gmtime(since['modified'])
                             if since.get('modified')
