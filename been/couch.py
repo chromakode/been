@@ -57,7 +57,9 @@ class CouchStore(Store):
     def store_source(self, source):
         source_data = source.config.copy()
         source_data['type'] = 'source'
-        self.db[source.source_id] = dates_to_epoch(source_data)
+        dates_to_epoch(source_data)
+        if self.db[source.source_id] != source_data:
+            self.db[source.source_id] = dates_to_epoch(source_data)
 
     def store_events(self, events):
         ids = {}
