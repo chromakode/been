@@ -125,20 +125,19 @@ class Store(object):
                             "source": source,
                             "kind": event["kind"],
                             "timestamp": event["timestamp"],
+                            "index": index,
                             "children": []
                         }
                     group = groups[source]
 
                     # Group if the event occured within "interval" (default 2 hours) of
                     # the last of the same source.
-                    latest = group["children"][-1]['timestamp'] if group["children"] else event['timestamp']
+                    latest = group['timestamp'] if group["children"] else event['timestamp']
                     interval = collapse.get('interval', 2*60*60)
                     # Compare latest - current, since events are ordered descending by timestamp.
                     if group['timestamp'] - event['timestamp'] <= interval:
                         event["collapsed"] = True
                         group["children"].append(event)
-                        group["timestamp"] = event["timestamp"]
-                        group["index"] = index
                     else:
                         # If a longer interval occurred, empty the group and add it at the position of its last event.
                         events[group["index"]] = group
