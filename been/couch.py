@@ -61,6 +61,7 @@ class CouchStore(Store):
 
     def store_events(self, events):
         ids = {}
+        changed = 0
         for event in events:
             dates_to_epoch(event)
             event.setdefault('_id', sha1(event['summary'].encode('utf-8')+str(event['timestamp'])).hexdigest())
@@ -74,6 +75,7 @@ class CouchStore(Store):
             for success, _id, info in result:
                 if success:
                     del ids[_id]
+                    changed += 1
                 else:
                     cur = self.db[_id]
                     ids[_id]['_rev'] = cur['_rev']
@@ -84,12 +86,14 @@ class CouchStore(Store):
         if ids:
             raise couchdb.ResourceConflict
 
+        return changed
+
     def store_update(self, source, events):
         for event in events:
             event['kind'] = source.kind
             event['source'] = source.source_id
-        self.store_events(events)
         self.store_source(source)
+        return self.store_events(events)
 
     def events(self, count=100, before=None):
         options = { 'limit': count, 'descending': True }

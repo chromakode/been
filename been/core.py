@@ -167,8 +167,10 @@ class Been(object):
 
     def update(self, sources=None):
         sources = sources or self.sources.itervalues()
+        changed = {}
         for source in sources:
-            self.store.store_update(source, source.fetch())
+            changed[source.source_id] = self.store.store_update(source, source.fetch())
+        return changed
 
     def reprocess(self):
         def reprocess_iter():

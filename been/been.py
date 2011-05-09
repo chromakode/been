@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import json
+import time
 from core import Been, source_registry
 from source import *
 
@@ -34,9 +35,14 @@ def update(app, source_id=None):
     """update: Fetches events from all sources. If called with an extra argument <source_id>, updates a single source."""
     if source_id:
         source = disambiguate(source_id, app.sources, 'source')
-        app.update([source])
+        changed = app.update([source])
     else:
-        app.update()
+        changed = app.update()
+
+    print '{ts} -- +{total} events [{changes}]'.format(
+            ts = time.ctime(),
+            total = sum(changed.itervalues()),
+            changes = ', '.join('{0}(+{1})'.format(_id, count) for _id, count in changed.iteritems()))
 
 @command
 def add(app, kind, *args):
