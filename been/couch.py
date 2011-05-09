@@ -1,20 +1,16 @@
 from hashlib import sha1
+import time
+import calendar
 import couchdb
 from core import Store
 
-# Add time serialization to couchdb's json repertoire.
-import json
-import time
-import calendar
-class TimeEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if type(obj) is time.struct_time:
-            return calendar.timegm(obj)
-        else:
-            return json.JSONEncoder.default(self, obj)
-couchdb.json.use(
-        decode=json.JSONDecoder().decode,
-        encode=TimeEncoder().encode)
+def dates_to_epoch(d):
+    for key, value in d.iteritems():
+        if hasattr(value, "iteritems"):
+            d[key] = dates_to_epoch(value)
+        elif type(value) is time.struct_time:
+            d[key] = calendar.timegm(value)
+    return d
 
 class CouchStore(Store):
     def load(self):
@@ -61,11 +57,12 @@ class CouchStore(Store):
     def store_source(self, source):
         source_data = source.config.copy()
         source_data['type'] = 'source'
-        self.db[source.source_id] = source_data
+        self.db[source.source_id] = dates_to_epoch(source_data)
 
     def store_events(self, events):
         ids = {}
         for event in events:
+            dates_to_epoch(event)
             event.setdefault('_id', sha1(event['summary'].encode('utf-8')+str(event['timestamp'])).hexdigest())
             ids[event['_id']] = event
             event['type'] = 'event'
@@ -78,7 +75,11 @@ class CouchStore(Store):
                 if success:
                     del ids[_id]
                 else:
-                    ids[_id]['_rev'] = self.db[_id]['_rev']
+                    cur = self.db[_id]
+                    ids[_id]['_rev'] = cur['_rev']
+                    if cur == ids[_id]:
+                        # If the data is the same, skip creating a new revision.
+                        del ids[_id]
 
         if ids:
             raise couchdb.ResourceConflict
@@ -88,7 +89,7 @@ class CouchStore(Store):
             event['kind'] = source.kind
             event['source'] = source.source_id
         self.store_events(events)
-        self.db[source.source_id] = source.config
+        self.store_source(source)
 
     def events(self, count=100, before=None):
         options = { 'limit': count, 'descending': True }
