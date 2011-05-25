@@ -97,8 +97,8 @@ class CouchStore(Store):
         self.store_source(source)
         return self.store_events(events)
 
-    def events(self, count=100, before=None, source=None):
-        options = { 'limit': count, 'descending': True }
+    def events(self, count=100, before=None, source=None, descending=True):
+        options = { 'limit': count, 'descending': descending }
         view = 'activity/events'
 
         if source is not None:
