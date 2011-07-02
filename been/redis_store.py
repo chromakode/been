@@ -82,7 +82,7 @@ class RedisStore(Store):
         return [self.event_by_id(id)] if id is not None else []
 
     def events_by_source_count(self):
-        return dict((source_id, self.db.hlen('events-by-source:' + source_id)) for source_id in self.get_source_ids())
+        return dict((source_id, self.db.zcard('events-by-source:' + source_id)) for source_id in self.get_source_ids())
 
     def empty(self):
         pipe = self.db.pipeline(transaction=True)
