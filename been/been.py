@@ -6,9 +6,11 @@ from core import Been, source_registry
 from source import *
 
 _cmds = {}
-def command(f):
-    _cmds[f.func_name] = f
-    return f
+def command(name=None):
+    def wrapper(f):
+        _cmds[name or f.func_name] = f
+        return f
+    return wrapper
 
 def run_command(cmd, app, args):
     disambiguate(cmd, _cmds, 'command')(app, *args)
@@ -30,7 +32,7 @@ def disambiguate(key, dict_, desc='key'):
             item = dict_[matches[0]]
     return item
 
-@command
+@command()
 def update(app, source_id=None):
     """update: Fetches events from all sources. If called with an extra argument <source_id>, updates a single source."""
     if source_id:
@@ -44,21 +46,21 @@ def update(app, source_id=None):
             total = sum(changed.itervalues()),
             changes = ', '.join('{0}(+{1})'.format(_id, count) for _id, count in changed.iteritems()))
 
-@command
+@command()
 def add(app, kind, *args):
     """add <kind> (parameters): Registers a source of the specified <kind>."""
     source_cls = source_registry.get(kind)
     if kind:
         app.add(source_cls.configure(*args))
 
-@command
+@command()
 def log(app):
     """log: Displays summaries for the 100 newest events."""
     for event in app.store.events():
         print event['summary'].encode('utf-8')
 
-@command
-def list(app):
+@command(name='list')
+def list_(app):
     """list: Displays the IDs of all registered sources."""
     counts = app.store.events_by_source_count()
     for source_id, source in app.sources.iteritems():
@@ -68,17 +70,17 @@ def list(app):
             if field in source.config:
                 print '  * {0}: {1}'.format(field, source.config[field])
 
-@command
+@command()
 def empty(app):
     """empty: Clears the event store of all events."""
     app.store.empty()
 
-@command
+@command()
 def reprocess(app):
     """reprocess: Reprocesses events using their stored data."""
     app.reprocess()
 
-@command
+@command()
 def configure(app, source_id, key, *args):
     """configure <source> <key> (value): Get or set the value of <key> for <source>."""
     source = disambiguate(source_id, app.sources, 'source')
@@ -93,7 +95,7 @@ def configure(app, source_id, key, *args):
     else:
         print json.dumps(source.config.get(key))
 
-@command
+@command()
 def help(app, cmd=None):
     """help (command): I think you know what this does already."""
     if cmd:
