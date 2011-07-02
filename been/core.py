@@ -154,8 +154,9 @@ class Been(object):
         self.sources = {}
     
     def init(self):
-        import couch
-        self.store = couch.CouchStore().load()
+        import redis_store
+        self.store = redis_store.RedisStore().load()
+        # import pdb; pdb.set_trace()
         for source_id, source_data in self.store.get_sources().iteritems():
             self.sources[source_id] = source_registry.create(source_data)
         return self

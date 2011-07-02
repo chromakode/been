@@ -16,6 +16,7 @@ setup(name='been',
             'feedparser',
             'markdown',
             'CouchDB',
+            'redis',
       ],
       entry_points={
           'console_scripts': [
