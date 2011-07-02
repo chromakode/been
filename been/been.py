@@ -2,7 +2,10 @@
 import sys
 import json
 import time
-from core import Been, source_registry
+from core import Been, Source, source_registry
+# TODO: from store import CouchStore, RedisStore
+from couch import CouchStore
+from redis_store import RedisStore
 from source import *
 
 _cmds = {}
@@ -94,6 +97,30 @@ def configure(app, source_id, key, *args):
         app.store.store_source(source)
     else:
         print json.dumps(source.config.get(key))
+
+@command()
+def migrate(app, from_store, to_store):
+    """migrate <from> <to>: copies your source/event storage from one backend to another."""
+    stores = {"couch": CouchStore, "redis": RedisStore}
+
+    if not from_store in stores or not to_store in stores:
+        print "Invalid storage engine specified. Must be one of: couch, redis"
+        sys.exit(1)
+
+    from_store = stores[from_store]().load()
+    to_store = stores[to_store]().load()
+
+    class MigratingSource(object):
+        def __init__(self, id, config):
+            self.source_id = id
+            self.config = config
+            self.kind = self.config['kind']
+
+    sources = from_store.get_sources()
+    for source_id, source_data in sources.iteritems():
+        to_store.store_source(MigratingSource(source_id, source_data))
+
+    to_store.store_events(list(from_store.events(count=sys.maxint)))
 
 @command()
 def help(app, cmd=None):
