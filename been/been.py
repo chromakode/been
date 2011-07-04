@@ -70,7 +70,7 @@ def list_(app, format=None):
         print '{name}'.format(name = source_id)
         if not format == 'short':
             print '  {0} events'.format(counts.get(source_id, 0))
-            for field in ['username', 'url', 'collapse']:
+            for field in ['username', 'url', 'collapse', 'syndicate']:
                 if field in source.config:
                     print '  * {0}: {1}'.format(field, source.config[field])
 
