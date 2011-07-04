@@ -37,7 +37,7 @@ def disambiguate(key, dict_, desc='key'):
 
 @command()
 def update(app, source_id=None):
-    """update: Fetches events from all sources. If called with an extra argument <source_id>, updates a single source."""
+    """update (source_id): Fetches events from all sources. If (source_id) is specified, updates a single source."""
     if source_id:
         source = disambiguate(source_id, app.sources, 'source')
         changed = app.update([source])
