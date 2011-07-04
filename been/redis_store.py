@@ -1,6 +1,7 @@
 from hashlib import sha1
 import time
 import redis
+import calendar
 import pickle
 from core import Store
 
@@ -9,7 +10,7 @@ def dates_to_epoch(d):
         if hasattr(value, 'iteritems'):
             d[key] = dates_to_epoch(value)
         elif type(value) is time.struct_time:
-            d[key] = int(time.mktime(value))
+            d[key] = int(calendar.timegm(value))
     return d
 
 def unpickle_dict(dict_):
