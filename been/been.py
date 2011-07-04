@@ -63,15 +63,16 @@ def log(app):
         print event['summary'].encode('utf-8')
 
 @command(name='list')
-def list_(app):
-    """list: Displays the IDs of all registered sources."""
+def list_(app, format=None):
+    """list (format): Displays the IDs of all registered sources. Available formats: short"""
     counts = app.store.events_by_source_count()
     for source_id, source in app.sources.iteritems():
         print '{name}'.format(name = source_id)
-        print '  {0} events'.format(counts.get(source_id, 0))
-        for field in ['username', 'url', 'collapse']:
-            if field in source.config:
-                print '  * {0}: {1}'.format(field, source.config[field])
+        if not format == 'short':
+            print '  {0} events'.format(counts.get(source_id, 0))
+            for field in ['username', 'url', 'collapse']:
+                if field in source.config:
+                    print '  * {0}: {1}'.format(field, source.config[field])
 
 @command()
 def empty(app):
