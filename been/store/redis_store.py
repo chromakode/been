@@ -3,19 +3,9 @@ import time
 import redis
 import calendar
 import pickle
-from core import Store
 
-def dates_to_epoch(d):
-    for key, value in d.iteritems():
-        if hasattr(value, 'iteritems'):
-            d[key] = dates_to_epoch(value)
-        elif type(value) is time.struct_time:
-            d[key] = int(calendar.timegm(value))
-    return d
-
-def unpickle_dict(dict_):
-    """Converts a dict of pickled items to a dict of unpickled items."""
-    return dict((k, pickle.loads(v)) for k, v in dict_.iteritems())
+from base import Store
+from utils import dates_to_epoch, unpickle_dict
 
 class RedisStore(Store):
     def load(self):

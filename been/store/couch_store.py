@@ -2,15 +2,9 @@ from hashlib import sha1
 import time
 import calendar
 import couchdb
-from core import Store
 
-def dates_to_epoch(d):
-    for key, value in d.iteritems():
-        if hasattr(value, "iteritems"):
-            d[key] = dates_to_epoch(value)
-        elif type(value) is time.struct_time:
-            d[key] = calendar.timegm(value)
-    return d
+from base import Store
+from utils import dates_to_epoch
 
 class CouchStore(Store):
     def load(self):

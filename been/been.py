@@ -3,9 +3,8 @@ import sys
 import json
 import time
 from core import Been, Source, source_registry
-# TODO: from store import CouchStore, RedisStore
-from couch import CouchStore
-from redis_store import RedisStore
+from store.couch_store import CouchStore
+from store.redis_store import RedisStore
 from source import *
 
 _cmds = {}
