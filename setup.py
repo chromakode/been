@@ -20,7 +20,7 @@ setup(name='been',
       ],
       entry_points={
           'console_scripts': [
-              'been = been.been:main',
+              'been = been.cli:main',
           ],
       }
 )

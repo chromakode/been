@@ -2,10 +2,9 @@
 import sys
 import json
 import time
-from core import Been, Source, source_registry
-from store.couch_store import CouchStore
-from store.redis_store import RedisStore
-from source import *
+from been import Been
+from been.stores import create_store, store_map
+from been.sources import source_map
 
 _cmds = {}
 def command(name=None):
@@ -14,8 +13,10 @@ def command(name=None):
         return f
     return wrapper
 
+
 def run_command(cmd, app, args):
     disambiguate(cmd, _cmds, 'command')(app, *args)
+
 
 def disambiguate(key, dict_, desc='key'):
     try:
@@ -34,6 +35,7 @@ def disambiguate(key, dict_, desc='key'):
             item = dict_[matches[0]]
     return item
 
+
 @command()
 def update(app, source_id=None):
     """update (source_id): Fetches events from all sources. If (source_id) is specified, updates a single source."""
@@ -48,18 +50,21 @@ def update(app, source_id=None):
             total = sum(changed.itervalues()),
             changes = ', '.join('{0}(+{1})'.format(_id, count) for _id, count in changed.iteritems()))
 
+
 @command()
 def add(app, kind, *args):
     """add <kind> (parameters): Registers a source of the specified <kind>."""
-    source_cls = source_registry.get(kind)
+    source_cls = source_map.get(kind)
     if kind:
         app.add(source_cls.configure(*args))
+
 
 @command()
 def log(app):
     """log: Displays summaries for the 100 newest events."""
     for event in app.store.events():
         print event['summary'].encode('utf-8')
+
 
 @command(name='list')
 def list_(app, format=None):
@@ -73,15 +78,18 @@ def list_(app, format=None):
                 if field in source.config:
                     print '  * {0}: {1}'.format(field, source.config[field])
 
+
 @command()
 def empty(app):
     """empty: Clears the event store of all events."""
     app.store.empty()
 
+
 @command()
 def reprocess(app):
     """reprocess: Reprocesses events using their stored data."""
     app.reprocess()
+
 
 @command()
 def configure(app, source_id, key, *args):
@@ -98,17 +106,17 @@ def configure(app, source_id, key, *args):
     else:
         print json.dumps(source.config.get(key))
 
+
 @command()
 def migrate(app, from_store, to_store):
     """migrate <from> <to>: copies your source/event storage from one backend to another."""
-    stores = {"couch": CouchStore, "redis": RedisStore}
 
-    if not from_store in stores or not to_store in stores:
+    if not from_store in store_map or not to_store in store_map:
         print "Invalid storage engine specified. Must be one of: couch, redis"
         sys.exit(1)
 
-    from_store = stores[from_store]().load()
-    to_store = stores[to_store]().load()
+    from_store = create_store(from_store)
+    to_store = create_store(to_store)
 
     class MigratingSource(object):
         def __init__(self, id, config):
@@ -122,6 +130,7 @@ def migrate(app, from_store, to_store):
 
     to_store.store_events(list(from_store.events(count=sys.maxint)))
 
+
 @command()
 def help(app, cmd=None):
     """help (command): I think you know what this does already."""
@@ -133,14 +142,15 @@ def help(app, cmd=None):
         for c in sorted(_cmds.keys()):
             print '   ' + c
 
+
 def main():
     app = Been()
-    app.init()
     if len(sys.argv) < 2:
         cmd = 'help'
     else:
         cmd = sys.argv[1]
     run_command(cmd, app, sys.argv[2:])
+
 
 if __name__=='__main__':
     main()
