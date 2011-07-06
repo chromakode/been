@@ -111,8 +111,18 @@ def configure(app, source_id, key, *args):
 def migrate(app, from_store, to_store):
     """migrate <from> <to>: copies your source/event storage from one backend to another."""
 
-    if not from_store in store_map or not to_store in store_map:
-        print "Invalid storage engine specified. Must be one of: couch, redis"
+    bad_store = None
+
+    if not to_store in store_map:
+        bad_store = to_store
+
+    if not from_store in store_map:
+        bad_store = from_store
+
+    if bad_store:
+        print "Invalid storage engine '{store}' specified. Must be one of:".format(store=bad_store)
+        for store in store_map:
+            print "  " + store
         sys.exit(1)
 
     from_store = create_store(from_store)
