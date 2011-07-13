@@ -55,8 +55,13 @@ def update(app, source_id=None):
 def add(app, kind, *args):
     """add <kind> (parameters): Registers a source of the specified <kind>."""
     source_cls = source_map.get(kind)
-    if kind:
+    if source_cls:
         app.add(source_cls.configure(*args))
+    else:
+        print "Invalid source kind '{kind}' specified. Must be one of:".format(kind=kind)
+        for kind in source_map:
+            print "  " + kind
+        sys.exit(1)
 
 
 @command()
