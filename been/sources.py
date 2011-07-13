@@ -124,6 +124,15 @@ class DeliciousSource(SiteFeedSource):
         return event
 
 
+class TumblrSource(SiteFeedSource):
+    url_format = 'http://{username}.tumblr.com/rss'
+    kind = 'tumblr'
+    def process_event(self, event):
+        event['author'] = self.config['username']
+        event['summary'] = 'posted ' + event['data']['title']
+        return event
+
+
 class FanFictionSource(SiteFeedSource):
     url_format = 'http://b.fanfiction.net/atom/u/{username}/'
     kind = 'fanfiction'
@@ -215,4 +224,5 @@ source_map = {
     'markdown': MarkdownSource,
     'reddit': RedditSource,
     'twitter': TwitterSource,
+    'tumblr': TumblrSource,
 }
