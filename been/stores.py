@@ -186,17 +186,18 @@ class RedisStore(Store):
     def __init__(self):
         super(RedisStore, self).__init__()
         self.db = redis.Redis()
+        self.prefix = 'activity-'
 
     def get_sources(self):
-        return unpickle_dict(self.db.hgetall('sources'))
+        return unpickle_dict(self.db.hgetall(self.prefix + 'sources'))
 
     def get_source_ids(self):
-        return self.db.hkeys('sources')
+        return self.db.hkeys(self.prefix + 'sources')
 
     def store_source(self, source):
         source_data = source.config.copy()
         dates_to_epoch(source_data)
-        self.db.hset('sources', source.source_id, pickle.dumps(source_data))
+        self.db.hset(self.prefix + 'sources', source.source_id, pickle.dumps(source_data))
 
     def store_events(self, events):
         ids = {}
@@ -205,12 +206,12 @@ class RedisStore(Store):
             event.setdefault('_id', sha1(event['summary'].encode('utf-8')+str(event['timestamp'])).hexdigest())
 
             pipe = self.db.pipeline(transaction=True)
-            pipe.hset('events', event['_id'], pickle.dumps(event))
+            pipe.hset(self.prefix + 'events', event['_id'], pickle.dumps(event))
             # Uggghhhh, the zadd API is terrible!
-            pipe.zadd('events-by-timestamp', **{event['_id']: event['timestamp']})
-            pipe.zadd('events-by-source:' + event['source'], **{event['_id']: event['timestamp']})
+            pipe.zadd(self.prefix + 'events-by-timestamp', **{event['_id']: event['timestamp']})
+            pipe.zadd(self.prefix + 'events-by-source:' + event['source'], **{event['_id']: event['timestamp']})
             if event.get('slug'):
-                pipe.hset('events-by-slug', event['slug'], event['_id'])
+                pipe.hset(self.prefix + 'events-by-slug', event['slug'], event['_id'])
             pipe.execute()
 
         return len(events)
@@ -223,11 +224,11 @@ class RedisStore(Store):
         return self.store_events(events)
 
     def events(self, count=100, before=None, source=None, descending=True):
-        key = 'events-by-timestamp'
+        key = self.prefix + 'events-by-timestamp'
         start = int(time.mktime(time.gmtime()))
 
         if source is not None:
-            key = 'events-by-source:' + source
+            key = self.prefix + 'events-by-source:' + source
         elif before is not None:
             start = int(before)
 
@@ -236,27 +237,27 @@ class RedisStore(Store):
         return self.events_by_ids(query(key, start, '-inf', start=0, num=count))
 
     def event_by_id(self, id):
-        return pickle.loads(self.db.hget('events', id))
+        return pickle.loads(self.db.hget(self.prefix + 'events', id))
 
     def events_by_ids(self, ids):
         if not ids:
             return []
-        return (pickle.loads(p) for p in self.db.hmget('events', ids))
+        return (pickle.loads(p) for p in self.db.hmget(self.prefix + 'events', ids))
 
     def events_by_slug(self, slug):
-        id = self.db.hget('events-by-slug', slug)
+        id = self.db.hget(self.prefix + 'events-by-slug', slug)
         return [self.event_by_id(id)] if id is not None else []
 
     def events_by_source_count(self):
-        return dict((source_id, self.db.zcard('events-by-source:' + source_id)) for source_id in self.get_source_ids())
+        return dict((source_id, self.db.zcard(self.prefix + 'events-by-source:' + source_id)) for source_id in self.get_source_ids())
 
     def empty(self):
         pipe = self.db.pipeline(transaction=True)
         pipe.delete(
-            'events',
-            'events-by-timestamp',
-            'events-by-slug',
-            *('events-by-source:' + source_id for source_id in self.get_source_ids())
+            self.prefix + 'events',
+            self.prefix + 'events-by-timestamp',
+            self.prefix + 'events-by-slug',
+            *(self.prefix + 'events-by-source:' + source_id for source_id in self.get_source_ids())
         )
         pipe.execute()
 
@@ -265,7 +266,7 @@ class RedisStore(Store):
             for source_id in sources:
                 sources[source_id]['since'] = {}
                 sources[source_id] = pickle.dumps(sources[source_id])
-            self.db.hmset('sources', sources)
+            self.db.hmset(self.prefix + 'sources', sources)
 
 store_map = {
     'couch': CouchStore,
