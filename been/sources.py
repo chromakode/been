@@ -93,7 +93,7 @@ class FeedSource(Source):
 
                 events.append(self.process_event(event))
 
-            self.config['since'] = {'etag': feed.get('etag'), 'modified': feed.get('modified')}
+            self.config['since'] = {'etag': feed.get('etag'), 'modified': feed.get('modified_parsed') or feed.get('modified')}
             return events
 
     def process_event(self, event):
