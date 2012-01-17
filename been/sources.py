@@ -213,6 +213,30 @@ class TwitterSource(SiteFeedSource):
         event['summary'] = 'tweeted "'+event['content']+'"'
         return event
 
+class PublishSource(Source):
+    kind = 'publish'
+
+    def __init__(self, config):
+        Source.__init__(self, config)
+        self.queue = []
+
+    def publish(self, **kwargs):
+        kwargs.setdefault('timestamp', time.time())
+        kwargs.setdefault('summary', kwargs['content'])
+        self.queue.append(kwargs)
+
+    def fetch(self):
+        events = self.queue
+        self.queue = []
+        return events
+
+    @property
+    def source_id(self):
+        return self.kind+':'+self.config['name']
+
+    @classmethod
+    def configure(cls, name):
+        return cls({'name':name})
 
 source_map = {
     'delicious': DeliciousSource,
@@ -225,4 +249,5 @@ source_map = {
     'reddit': RedditSource,
     'twitter': TwitterSource,
     'tumblr': TumblrSource,
+    'publish': PublishSource
 }

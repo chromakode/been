@@ -149,6 +149,21 @@ def migrate(app, from_store, to_store):
 
     to_store.store_events(list(from_store.events(count=sys.maxint)))
 
+@command()
+def publish(app, source_name, *args):
+    """publish (name) (data): Manually adds an event to a source of kind "publish"."""
+    source_id = 'publish:'+source_name
+    source = disambiguate(source_id, app.sources, 'source')
+    if not source:
+        print 'Invalid source specified.'
+        sys.exit(1)
+    elif source.kind != 'publish':
+        print "Invalid source of kind '{kind}' specified.".format(kind=source.kind)
+        sys.exit(1)
+
+    data = json.loads(' '.join(args))
+    source.publish(**data)
+    update(app, source_id)
 
 @command()
 def help(app, cmd=None):
