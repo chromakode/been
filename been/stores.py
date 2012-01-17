@@ -156,7 +156,10 @@ class CouchStore(Store):
         return self.store_events(events)
 
     def events(self, count=100, before=None, source=None, descending=True):
-        options = { 'limit': count, 'descending': descending }
+        options = { 'descending': descending }
+        if count is not None:
+            options['limit'] = count
+
         view = 'activity/events'
 
         if source is not None:
