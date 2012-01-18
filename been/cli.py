@@ -151,7 +151,7 @@ def migrate(app, from_store, to_store):
 
 @command()
 def publish(app, source_name, *args):
-    """publish (name) (data): Manually adds an event to a source of kind "publish"."""
+    """publish (name) (key:\"value\") ...: Manually adds an event to a source of kind "publish"."""
     source_id = 'publish:'+source_name
     source = disambiguate(source_id, app.sources, 'source')
     if not source:
@@ -161,7 +161,11 @@ def publish(app, source_name, *args):
         print "Invalid source of kind '{kind}' specified.".format(kind=source.kind)
         sys.exit(1)
 
-    data = json.loads(' '.join(args))
+    data = {}
+    for field in args:
+        key, value = field.split(':', 1)
+        value = value.strip('"\'')
+        data[key] = value
     source.publish(**data)
     update(app, source_id)
 
