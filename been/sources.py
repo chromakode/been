@@ -48,7 +48,6 @@ class DirectorySource(Source):
             }
 
             event = self.process_event(event)
-
             if event:
                 events.append(event)
 
@@ -91,7 +90,9 @@ class FeedSource(Source):
                 if 'content' in entry:
                     event['content'] = entry.get('content')[0]['value'],
 
-                events.append(self.process_event(event))
+                event = self.process_event(event)
+                if event:
+                    events.append(event)
 
             self.config['since'] = {'etag': feed.get('etag'), 'modified': feed.get('modified_parsed') or feed.get('modified')}
             return events
