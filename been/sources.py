@@ -236,6 +236,7 @@ class PublishSource(Source):
     def publish(self, **kwargs):
         kwargs.setdefault('timestamp', time.time())
         kwargs.setdefault('summary', kwargs['content'])
+        kwargs.update(self.config.get('default', {}))
         self.queue.append(kwargs)
 
     def fetch(self):
