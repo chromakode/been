@@ -94,7 +94,7 @@ class CouchStore(Store):
                     "map": "function(doc) { if (doc.type == 'event') { emit(doc.timestamp, doc) } }"
                 },
                 "events-by-source": {
-                    "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }"
+                    "map": "function(doc) { if (doc.type == 'event') { emit([doc.source, doc.timestamp], doc) } }"
                 },
                 "events-by-source-count": {
                     "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }",
@@ -163,8 +163,13 @@ class CouchStore(Store):
         view = 'activity/events'
 
         if source is not None:
-            options['startkey'] = source
             view = 'activity/events-by-source'
+            if before is None:
+                before = {}
+            options['startkey'] = [source, 0]
+            options['endkey'] = [source, before]
+            if descending:
+                options['startkey'], options['endkey'] = options['endkey'], options['startkey']
         elif before is not None:
             options['startkey'] = before
 
