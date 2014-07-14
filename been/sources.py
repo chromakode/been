@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 import time
 import unicodedata
 from hashlib import sha1
@@ -38,12 +39,11 @@ class Source(object):
 
 
 class DirectorySource(Source):
-    def fetch(self):
-        path = self.config.get('path')
+    def _fetch_path(self, path):
         events = []
 
         for filename in os.listdir(path):
-            full_path = path + '/' + filename
+            full_path = os.path.join(path, filename)
 
             if not os.path.isfile(full_path):
                 continue
@@ -64,6 +64,9 @@ class DirectorySource(Source):
 
         return events
 
+    def fetch(self):
+        return self._fetch_path(self.config['path'])
+
     def process_event(self, event):
         return event
 
@@ -74,6 +77,46 @@ class DirectorySource(Source):
     @classmethod
     def configure(cls, path):
         return cls({'path':path.rstrip('/')})
+
+
+class GitDirectorySource(DirectorySource):
+    def fetch(self):
+        subprocess.check_call([
+            'git',
+            '-C', self.config['path'],
+            'pull',
+            '--quiet',
+        ])
+
+        events = self._fetch_path(os.path.join(
+            self.config['path'],
+            self.config['subdirectory'],
+        ))
+
+        # use the date of the first commit adding each file
+        for event in events:
+            output = subprocess.check_output([
+                'git',
+                '-C', self.config['path'],
+                'log', '--follow', '--format=%at',
+                event['full_path'],
+            ])
+            first_date = int(output.strip().split('\n')[-1])
+            event['timestamp'] = time.gmtime(first_date)
+
+        return events
+
+
+    @property
+    def source_id(self):
+        return self.kind+':'+self.config['path']+':'+self.config['subdirectory']
+
+    @classmethod
+    def configure(cls, path, subdirectory):
+        return cls({
+            'path': path.rstrip('/'),
+            'subdirectory': subdirectory.strip('/'),
+        })
 
 
 class FeedSource(Source):
@@ -196,9 +239,7 @@ class LastFMSource(SiteFeedSource):
         return event
 
 
-@source('markdown')
-class MarkdownSource(DirectorySource):
-    kind = 'markdown'
+class MarkdownProcessor(object):
     def process_event(self, event):
         md = markdown.Markdown(extensions=['meta', 'tables', 'fenced_code', 'headerid'])
         event['content'] = md.convert(event['raw'])
@@ -215,6 +256,16 @@ class MarkdownSource(DirectorySource):
             return None
         else:
             return event
+
+
+@source('markdown')
+class MarkdownSource(MarkdownProcessor, DirectorySource):
+    kind = 'markdown'
+
+
+@source('git-markdown')
+class GitMarkdownSource(MarkdownProcessor, GitDirectorySource):
+    kind = 'git-markdown'
 
 
 @source('reddit')
