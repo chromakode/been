@@ -14,6 +14,7 @@ source_map = {}
 
 def source(name):
     def wrapper(cls):
+        cls.kind = name
         source_map[name] = cls
         return cls
     return wrapper
@@ -173,7 +174,6 @@ class SiteFeedSource(FeedSource):
 @source('delicious')
 class DeliciousSource(SiteFeedSource):
     url_format = 'http://feeds.delicious.com/v2/rss/{username}?count=50'
-    kind = 'delicious'
     def process_event(self, event):
         event['author'] = self.config['username']
         event['summary'] = 'bookmarked ' + event['data']['title']
@@ -183,7 +183,6 @@ class DeliciousSource(SiteFeedSource):
 @source('tumblr')
 class TumblrSource(SiteFeedSource):
     url_format = 'http://{username}.tumblr.com/rss'
-    kind = 'tumblr'
     def process_event(self, event):
         event['author'] = self.config['username']
         event['summary'] = 'posted ' + event['data']['title']
@@ -193,7 +192,6 @@ class TumblrSource(SiteFeedSource):
 @source('fanfiction')
 class FanFictionSource(SiteFeedSource):
     url_format = 'http://b.fanfiction.net/atom/u/{username}/'
-    kind = 'fanfiction'
     def process_event(self, event):
         event['summary'] = 'wrote a chapter in ' + event['data']['title']
         return event
@@ -202,7 +200,6 @@ class FanFictionSource(SiteFeedSource):
 @source('flickr')
 class FlickrSource(SiteFeedSource):
     url_format = 'http://api.flickr.com/services/feeds/photos_public.gne?id={username}&lang=en-us&format=rss_200'
-    kind = 'flickr'
     def process_event(self, event):
         event['summary'] = 'posted photo ' + event['data']['title']
         return event
@@ -211,7 +208,6 @@ class FlickrSource(SiteFeedSource):
 @source('github')
 class GitHubSource(SiteFeedSource):
     url_format = 'https://github.com/{username}.atom'
-    kind = 'github'
     def process_event(self, event):
         summary = event['data']['title']
         if summary.startswith(self.config['username']):
@@ -222,7 +218,6 @@ class GitHubSource(SiteFeedSource):
 @source('grooveshark')
 class GroovesharkSource(SiteFeedSource):
     url_format = 'http://api.grooveshark.com/feeds/1.0/users/{username}/recent_favorite_songs.rss'
-    kind = 'grooveshark'
     def process_event(self, event):
         event['author'] = self.config['username']
         event['summary'] = 'favorited ' + event['data']['title']
@@ -232,7 +227,6 @@ class GroovesharkSource(SiteFeedSource):
 @source('lastfm')
 class LastFMSource(SiteFeedSource):
     url_format = 'http://ws.audioscrobbler.com/2.0/user/{username}/recenttracks.rss?limit=50'
-    kind = 'lastfm'
     def process_event(self, event):
         event['summary'] = 'listened to ' + event['data']['title']
         event['artist'], event['track'] = event['data']['title'].split(u' \u2013 ')
@@ -260,18 +254,17 @@ class MarkdownProcessor(object):
 
 @source('markdown')
 class MarkdownSource(MarkdownProcessor, DirectorySource):
-    kind = 'markdown'
+    pass
 
 
 @source('git-markdown')
 class GitMarkdownSource(MarkdownProcessor, GitDirectorySource):
-    kind = 'git-markdown'
+    pass
 
 
 @source('reddit')
 class RedditSource(SiteFeedSource):
     url_format = 'http://www.reddit.com/user/{username}/submitted/.rss'
-    kind = 'reddit'
     def process_event(self, event):
         event['summary'] = 'submitted ' + event['data']['title']
         return event
@@ -279,7 +272,6 @@ class RedditSource(SiteFeedSource):
 
 @source('twitter')
 class TwitterSource(Source):
-    kind = 'twitter'
 
     def fetch(self):
         import twitter
@@ -326,7 +318,6 @@ class TwitterSource(Source):
 
 @source('publish')
 class PublishSource(Source):
-    kind = 'publish'
 
     def __init__(self, config):
         Source.__init__(self, config)
