@@ -8,6 +8,16 @@ import feedparser
 import markdown
 
 
+source_map = {}
+
+
+def source(name):
+    def wrapper(cls):
+        source_map[name] = cls
+        return cls
+    return wrapper
+
+
 def create_source(source_data):
     return source_map[source_data['kind']](source_data)
 
@@ -117,6 +127,7 @@ class SiteFeedSource(FeedSource):
         return cls({'username':username})
 
 
+@source('delicious')
 class DeliciousSource(SiteFeedSource):
     url_format = 'http://feeds.delicious.com/v2/rss/{username}?count=50'
     kind = 'delicious'
@@ -126,6 +137,7 @@ class DeliciousSource(SiteFeedSource):
         return event
 
 
+@source('tumblr')
 class TumblrSource(SiteFeedSource):
     url_format = 'http://{username}.tumblr.com/rss'
     kind = 'tumblr'
@@ -135,6 +147,7 @@ class TumblrSource(SiteFeedSource):
         return event
 
 
+@source('fanfiction')
 class FanFictionSource(SiteFeedSource):
     url_format = 'http://b.fanfiction.net/atom/u/{username}/'
     kind = 'fanfiction'
@@ -143,6 +156,7 @@ class FanFictionSource(SiteFeedSource):
         return event
 
 
+@source('flickr')
 class FlickrSource(SiteFeedSource):
     url_format = 'http://api.flickr.com/services/feeds/photos_public.gne?id={username}&lang=en-us&format=rss_200'
     kind = 'flickr'
@@ -151,6 +165,7 @@ class FlickrSource(SiteFeedSource):
         return event
 
 
+@source('github')
 class GitHubSource(SiteFeedSource):
     url_format = 'https://github.com/{username}.atom'
     kind = 'github'
@@ -161,6 +176,7 @@ class GitHubSource(SiteFeedSource):
         return event
 
 
+@source('grooveshark')
 class GroovesharkSource(SiteFeedSource):
     url_format = 'http://api.grooveshark.com/feeds/1.0/users/{username}/recent_favorite_songs.rss'
     kind = 'grooveshark'
@@ -170,6 +186,7 @@ class GroovesharkSource(SiteFeedSource):
         return event
 
 
+@source('lastfm')
 class LastFMSource(SiteFeedSource):
     url_format = 'http://ws.audioscrobbler.com/2.0/user/{username}/recenttracks.rss?limit=50'
     kind = 'lastfm'
@@ -179,6 +196,7 @@ class LastFMSource(SiteFeedSource):
         return event
 
 
+@source('markdown')
 class MarkdownSource(DirectorySource):
     kind = 'markdown'
     def process_event(self, event):
@@ -199,6 +217,7 @@ class MarkdownSource(DirectorySource):
             return event
 
 
+@source('reddit')
 class RedditSource(SiteFeedSource):
     url_format = 'http://www.reddit.com/user/{username}/submitted/.rss'
     kind = 'reddit'
@@ -207,6 +226,7 @@ class RedditSource(SiteFeedSource):
         return event
 
 
+@source('twitter')
 class TwitterSource(SiteFeedSource):
     url_format = 'http://api.twitter.com/1/statuses/user_timeline.atom?screen_name={username}'
     kind = 'twitter'
@@ -228,6 +248,7 @@ class TwitterSource(SiteFeedSource):
         return cls({'username':username, 'keyword':keyword})
 
 
+@source('publish')
 class PublishSource(Source):
     kind = 'publish'
 
@@ -253,18 +274,3 @@ class PublishSource(Source):
     @classmethod
     def configure(cls, name):
         return cls({'name':name})
-
-
-source_map = {
-    'delicious': DeliciousSource,
-    'fanfiction': FanFictionSource,
-    'flickr': FlickrSource,
-    'github': GitHubSource,
-    'grooveshark': GroovesharkSource,
-    'lastfm': LastFMSource,
-    'markdown': MarkdownSource,
-    'reddit': RedditSource,
-    'twitter': TwitterSource,
-    'tumblr': TumblrSource,
-    'publish': PublishSource,
-}
