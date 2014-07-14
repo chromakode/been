@@ -68,7 +68,7 @@ def add(app, kind=None, *args):
     source = source_cls.configure(*args)
 
     if source.source_id in app.sources:
-        print "A source with id '{id} already exists.'".format(id=source.source_id)
+        print "A source with id '{id}' already exists.".format(id=source.source_id)
         return
 
     app.add(source)
