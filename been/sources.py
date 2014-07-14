@@ -278,25 +278,50 @@ class RedditSource(SiteFeedSource):
 
 
 @source('twitter')
-class TwitterSource(SiteFeedSource):
-    url_format = 'http://api.twitter.com/1/statuses/user_timeline.atom?screen_name={username}'
+class TwitterSource(Source):
     kind = 'twitter'
 
-    def process_event(self, event):
-        event['content'] = event['data']['content'][0]['value'].partition(': ')[2]
-        event['summary'] = 'tweeted "'+event['content']+'"'
-        if self.config.get('keyword') and self.config['keyword'].lower() not in event['content'].lower():
-            return None
-        else:
-            return event
+    def fetch(self):
+        import twitter
+        api = twitter.Api(
+            consumer_key=self.config['consumer_key'],
+            consumer_secret=self.config['consumer_secret'],
+            access_token_key=self.config['access_token_key'],
+            access_token_secret=self.config['access_token_secret'],
+        )
+
+        events = []
+        keyword = self.config.get('keyword') and self.config['keyword'].lower()
+        for tweet in api.GetUserTimeline(self.config['username']):
+            event = {
+                'author': tweet.user.screen_name,
+                'timestamp': time.gmtime(tweet.created_at_in_seconds),
+                'event_link': 'https://twitter.com/{user}/static/{id}'.format(
+                    user=self.config['username'],
+                    id=tweet.id,
+                ),
+                'content': tweet.text,
+                'summary': 'tweeted "{tweet}"'.format(tweet=tweet.text),
+            }
+            if not keyword or keyword in event['content'].lower():
+                events.append(event)
+        return events
 
     @property
     def source_id(self):
         return self.kind+':'+self.config['username']
 
     @classmethod
-    def configure(cls, username, keyword=None):
-        return cls({'username':username, 'keyword':keyword})
+    def configure(cls, consumer_key, consumer_secret, access_token_key,
+                  access_token_secret, username, keyword=None):
+        return cls({
+            'consumer_key': consumer_key,
+            'consumer_secret': consumer_secret,
+            'access_token_key': access_token_key,
+            'access_token_secret': access_token_secret,
+            'username': username,
+            'keyword': keyword
+        })
 
 
 @source('publish')

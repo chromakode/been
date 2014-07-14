@@ -19,6 +19,9 @@ setup(
         "CouchDB",
         "redis",
     ],
+    extras_require={
+        "twitter": ["python-twitter"],
+    },
     entry_points={
         "console_scripts": [
             "been = been.cli:main",
