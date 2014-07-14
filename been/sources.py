@@ -1,10 +1,11 @@
-from hashlib import sha1
-import feedparser
-import markdown
 import os
 import re
 import time
 import unicodedata
+from hashlib import sha1
+
+import feedparser
+import markdown
 
 
 def create_source(source_data):
@@ -80,11 +81,11 @@ class FeedSource(Source):
             events = []
             for entry in feed.entries:
                 event = {
-                    'author'     : entry.get('author'),
-                    'summary'    : entry.get('title'),
-                    'timestamp'  : entry.get('published_parsed') or entry.get('updated_parsed'),
-                    'event_link' : entry.get('link'),
-                    'data'       : entry
+                    'author': entry.get('author'),
+                    'summary': entry.get('title'),
+                    'timestamp': entry.get('published_parsed') or entry.get('updated_parsed'),
+                    'event_link': entry.get('link'),
+                    'data': entry,
                 }
 
                 if 'content' in entry:
@@ -226,6 +227,7 @@ class TwitterSource(SiteFeedSource):
     def configure(cls, username, keyword=None):
         return cls({'username':username, 'keyword':keyword})
 
+
 class PublishSource(Source):
     kind = 'publish'
 
@@ -252,6 +254,7 @@ class PublishSource(Source):
     def configure(cls, name):
         return cls({'name':name})
 
+
 source_map = {
     'delicious': DeliciousSource,
     'fanfiction': FanFictionSource,
@@ -263,5 +266,5 @@ source_map = {
     'reddit': RedditSource,
     'twitter': TwitterSource,
     'tumblr': TumblrSource,
-    'publish': PublishSource
+    'publish': PublishSource,
 }

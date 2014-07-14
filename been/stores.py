@@ -1,7 +1,8 @@
-from hashlib import sha1
 import time
 import calendar
 import pickle
+from hashlib import sha1
+
 import couchdb
 import redis
 
@@ -47,7 +48,7 @@ class Store(object):
                             "kind": event["kind"],
                             "timestamp": event["timestamp"],
                             "index": index,
-                            "children": []
+                            "children": [],
                         }
                     group = groups[source]
 
@@ -88,21 +89,21 @@ class CouchStore(Store):
             "language": "javascript",
             "views": {
                 "sources": {
-                    "map": "function(doc) { if (doc.type == 'source') { emit(doc._id, doc) } }"
+                    "map": "function(doc) { if (doc.type == 'source') { emit(doc._id, doc) } }",
                 },
                 "events": {
-                    "map": "function(doc) { if (doc.type == 'event') { emit(doc.timestamp, doc) } }"
+                    "map": "function(doc) { if (doc.type == 'event') { emit(doc.timestamp, doc) } }",
                 },
                 "events-by-source": {
-                    "map": "function(doc) { if (doc.type == 'event') { emit([doc.source, doc.timestamp], doc) } }"
+                    "map": "function(doc) { if (doc.type == 'event') { emit([doc.source, doc.timestamp], doc) } }",
                 },
                 "events-by-source-count": {
                     "map": "function(doc) { if (doc.type == 'event') { emit(doc.source, doc) } }",
-                    "reduce": "_count"
+                    "reduce": "_count",
                 },
                 "events-by-slug": {
-                    "map": "function(doc) { if (doc.type == 'event' && doc.slug) { emit(doc.slug, doc) } }"
-                }
+                    "map": "function(doc) { if (doc.type == 'event' && doc.slug) { emit(doc.slug, doc) } }",
+                },
             }
         }
         doc = self.db.get(views['_id'], {})
@@ -184,6 +185,7 @@ class CouchStore(Store):
     def empty(self):
         for event in self.db.view('activity/events'):
             self.db.delete(event.value)
+
         for row in self.db.view('activity/sources'):
             source = row.value
             source['since'] = {}
@@ -275,6 +277,7 @@ class RedisStore(Store):
                 sources[source_id]['since'] = {}
                 sources[source_id] = pickle.dumps(sources[source_id])
             self.db.hmset(self.prefix + 'sources', sources)
+
 
 store_map = {
     'couch': CouchStore,

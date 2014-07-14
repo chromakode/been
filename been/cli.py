@@ -2,9 +2,11 @@
 import sys
 import json
 import time
+
 from been import Been
 from been.stores import create_store, store_map
 from been.sources import source_map
+
 
 _cmds = {}
 def command(name=None):
@@ -155,6 +157,7 @@ def migrate(app, from_store, to_store):
 
     to_store.store_events(list(from_store.events(count=sys.maxint)))
 
+
 @command()
 def publish(app, source_name, *args):
     """publish (name) (key:\"value\") ...: Manually adds an event to a source of kind "publish"."""
@@ -174,6 +177,7 @@ def publish(app, source_name, *args):
         data[key] = value
     source.publish(**data)
     update(app, source_id)
+
 
 @command()
 def help(app, cmd=None):
