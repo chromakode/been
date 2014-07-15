@@ -80,7 +80,7 @@ def add(app, kind=None, *args):
 def log(app):
     """log: Displays summaries for the 100 newest events."""
     for event in app.store.events():
-        print '{timestamp} -- {summary}'.format(
+        print u'{timestamp} -- {summary}'.format(
             timestamp=time.ctime(event['timestamp']),
             summary=event['summary'],
         )
