@@ -237,7 +237,8 @@ class MarkdownProcessor(object):
     def process_event(self, event):
         md = markdown.Markdown(extensions=['meta', 'tables', 'fenced_code', 'headerid'])
         event['content'] = md.convert(event['raw'])
-        event['title'] = ' '.join(md.Meta.get('title', [event['filename']]))
+        filename = os.path.splitext(event['filename'])[0]
+        event['title'] = ' '.join(md.Meta.get('title', [filename]))
         event['author'] = ' '.join(md.Meta.get('author', ['']))
         event['slug'] = '-'.join(md.Meta.get('slug', [slugify(event['title'])]))
         event['summary'] = 'posted ' + event['title']
