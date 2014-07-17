@@ -1,4 +1,4 @@
-# been
+![been](https://raw.githubusercontent.com/chromakode/been/master/art/logo.png)
 
 Been is a minimalistic life stream archiver and aggregator. It fetches *events* from a set of *sources*, such as GitHub commits, reddit comments, and tweets, logging them in a *store* (couchdb or redis).
 
