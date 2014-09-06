@@ -102,7 +102,11 @@ class GitDirectorySource(DirectorySource):
                 'log', '--follow', '--format=%at',
                 event['full_path'],
             ])
-            first_date = int(output.strip().split('\n')[-1])
+            try:
+                first_date = int(output.strip().split('\n')[-1])
+            except ValueError:
+                raise ValueError('invalid git log output for {!r}: {!r}'
+                        .format(event['full_path'], output))
             event['timestamp'] = time.gmtime(first_date)
 
         return events
