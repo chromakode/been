@@ -241,8 +241,17 @@ class MarkdownProcessor(object):
     def process_event(self, event):
         md = markdown.Markdown(extensions=['meta', 'tables', 'fenced_code', 'headerid'])
         event['content'] = md.convert(event['raw'])
-        filename = os.path.splitext(event['filename'])[0]
-        event['title'] = ' '.join(md.Meta.get('title', [filename]))
+
+        md_header = re.match(r'^#\w*(.*)\n', event['raw'])
+        print md_header, event['raw']
+        if md_header:
+            event['title'] = md_header.group(1)
+        elif 'title' in md.Meta:
+            event['title'] = ' '.join(md.Meta['title'])
+        else:
+            filename = os.path.splitext(event['filename'])[0]
+            event['title'] = filename
+
         event['author'] = ' '.join(md.Meta.get('author', ['']))
         event['slug'] = '-'.join(md.Meta.get('slug', [slugify(event['title'])]))
         event['summary'] = 'posted ' + event['title']
