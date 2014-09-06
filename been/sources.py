@@ -294,7 +294,7 @@ class TwitterSource(Source):
                     id=tweet.id,
                 ),
                 'content': tweet.text,
-                'summary': 'tweeted "{tweet}"'.format(tweet=tweet.text),
+                'summary': u'tweeted "{tweet}"'.format(tweet=tweet.text),
             }
             if not keyword or keyword in event['content'].lower():
                 events.append(event)
