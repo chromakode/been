@@ -1,6 +1,7 @@
-import time
 import calendar
+import os
 import pickle
+import time
 from hashlib import sha1
 
 import couchdb
@@ -75,7 +76,11 @@ class Store(object):
 class CouchStore(Store):
     def __init__(self):
         super(CouchStore, self).__init__()
-        self.server = couchdb.client.Server()
+        url = "http://{}:{}/".format(
+            os.environ.get("BEEN_COUCHDB_HOST", "localhost"),
+            os.environ.get("BEEN_COUCHDB_PORT", 5984),
+        )
+        self.server = couchdb.client.Server(url=url)
 
         db_name = self.config.get('db_name', 'activity')
         if not db_name in self.server:
@@ -195,7 +200,10 @@ class CouchStore(Store):
 class RedisStore(Store):
     def __init__(self):
         super(RedisStore, self).__init__()
-        self.db = redis.Redis()
+        self.db = redis.Redis(
+            host=os.environ.get("BEEN_REDIS_HOST", "localhost"),
+            port=os.envrion.get("BEEN_REDIS_PORT", 6379),
+        )
         self.prefix = 'activity-'
 
     def get_sources(self):
