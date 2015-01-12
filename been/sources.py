@@ -50,7 +50,7 @@ class DirectorySource(Source):
                 continue
 
             with open(full_path) as f:
-                raw = f.read()
+                raw = f.read().decode('utf-8')
 
             event = {
                 'filename'  : filename,
